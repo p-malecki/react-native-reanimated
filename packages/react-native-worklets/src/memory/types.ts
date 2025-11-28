@@ -52,3 +52,22 @@ export type SerializationData<
 };
 
 export type CustomSerializationRegistry = SerializationData<object, object>[];
+
+export type ShareableHost<TValue = unknown> = {
+  value: TValue;
+  isHost: true;
+  __shareableRef: true;
+};
+
+export type ShareableBorrow<TValue = unknown> = {
+  getAsync(): Promise<TValue>;
+  getSync(): TValue;
+  setAsync(value: TValue | ((prev: TValue) => TValue)): void;
+  setSync(value: TValue | ((prev: TValue) => TValue)): void;
+  isHost: false;
+  __shareableRef: true;
+};
+
+export type Shareable<TValue = unknown> =
+  | ShareableHost<TValue>
+  | ShareableBorrow<TValue>;

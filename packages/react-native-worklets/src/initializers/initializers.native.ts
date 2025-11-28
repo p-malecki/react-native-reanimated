@@ -5,6 +5,7 @@ import { registerReportFatalRemoteError } from '../debug/errors';
 import { registerWorkletsError, WorkletsError } from '../debug/WorkletsError';
 import { bundleValueUnpacker } from '../memory/bundleUnpacker';
 import { __installUnpacker as installCustomSerializableUnpacker } from '../memory/customSerializableUnpacker';
+import { __installUnpacker as installShareableUnpacker } from '../memory/shareableUnpacker';
 import { __installUnpacker as installSynchronizableUnpacker } from '../memory/synchronizableUnpacker';
 import { setupSetImmediate } from '../runLoop/common/setImmediatePolyfill';
 import { setupSetInterval } from '../runLoop/common/setIntervalPolyfill';
@@ -17,7 +18,7 @@ import { isWorkletFunction } from '../workletFunction';
 import { WorkletsModule } from '../WorkletsModule/NativeWorklets';
 
 if (globalThis.__RUNTIME_KIND === undefined) {
-  // The only runtime that doesn't have `__RUNTIME_KIND` preconfigured
+  // The only runtime that doesn't have `__RUNTIME_KIND` pre-configured
   // is the RN Runtime. We must set it as soon as possible.
   globalThis.__RUNTIME_KIND = RuntimeKind.ReactNative;
 }
@@ -107,6 +108,7 @@ function initializeRuntime() {
   }
   installSynchronizableUnpacker();
   installCustomSerializableUnpacker();
+  installShareableUnpacker();
 }
 
 /** A function that should be run only on React Native runtime. */
