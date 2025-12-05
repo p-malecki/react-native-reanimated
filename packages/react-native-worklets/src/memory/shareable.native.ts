@@ -17,8 +17,14 @@ export function createShareable<TValue = unknown>(
 ): Shareable<TValue>;
 
 export function createShareable<TValue = unknown>(
-  hostRuntime: WorkletRuntime | 'UI',
+  hostRuntime: 'UI',
   initialValue: TValue
+): Shareable<TValue>;
+
+export function createShareable<TValue = unknown>(
+  hostRuntime: WorkletRuntime | 'UI',
+  initialValue: TValue,
+  config?: { inline: true }
 ): Shareable<TValue> {
   let actualHostRuntime: WorkletRuntime;
   if (hostRuntime === 'UI') {
@@ -29,8 +35,11 @@ export function createShareable<TValue = unknown>(
 
   const shareableRef = WorkletsModule.createShareable(
     actualHostRuntime,
-    createSerializable(initialValue)
+    createSerializable(initialValue),
+    !!config?.inline
   );
+
+  console.log('shareableRef created', shareableRef);
 
   return globalThis.__shareableUnpacker(
     shareableRef,

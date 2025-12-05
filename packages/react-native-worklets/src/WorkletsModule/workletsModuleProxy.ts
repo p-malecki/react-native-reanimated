@@ -83,7 +83,8 @@ export interface WorkletsModuleProxy {
 
   createShareable<TValue = unknown>(
     hostRuntime: WorkletRuntime,
-    initialValue: SerializableRef<TValue>
+    initialValue: SerializableRef<TValue>,
+    inline: boolean
   ): SerializableRef<TValue>;
 
   getUIWorkletRuntime(): WorkletRuntime;

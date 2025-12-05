@@ -5,6 +5,7 @@
 #include <worklets/NativeModules/JSIWorkletsModuleProxy.h>
 #include <worklets/NativeModules/WorkletsModuleProxy.h>
 #include <worklets/SharedItems/Serializable.h>
+#include <worklets/SharedItems/Shareable.h>
 #include <worklets/SharedItems/Synchronizable.h>
 #include <worklets/Tools/Defs.h>
 #include <worklets/Tools/FeatureFlags.h>
@@ -206,7 +207,7 @@ std::vector<jsi::PropNameID> JSIWorkletsModuleProxy::getPropertyNames(jsi::Runti
   /* #endregion Serializable */
   /* #region Worklet Runtime */
 
-  propertyNames.emplace_back(jsi::PropNameID::forAscii(rt, "getUIRuntimeRef"));
+  propertyNames.emplace_back(jsi::PropNameID::forAscii(rt, "getUIWorkletRuntime"));
   propertyNames.emplace_back(jsi::PropNameID::forAscii(rt, "scheduleOnUI"));
   propertyNames.emplace_back(jsi::PropNameID::forAscii(rt, "runOnUISync"));
   propertyNames.emplace_back(jsi::PropNameID::forAscii(rt, "createWorkletRuntime"));
@@ -403,7 +404,7 @@ jsi::Value JSIWorkletsModuleProxy::get(jsi::Runtime &rt, const jsi::PropNameID &
   /* #endregion Serializable */
   /* #region Worklet Runtime */
 
-  if (name == "getUIRuntimeRef") {
+  if (name == "getUIWorkletRuntime") {
     return jsi::Function::createFromHostFunction(
         rt,
         propName,
@@ -580,11 +581,15 @@ jsi::Value JSIWorkletsModuleProxy::get(jsi::Runtime &rt, const jsi::PropNameID &
 
   if (name == "createShareable") {
     return jsi::Function::createFromHostFunction(
-        rt, propName, 1, [](jsi::Runtime &rt, const jsi::Value &thisValue, const jsi::Value *args, size_t count) {
-          return jsi::Value::undefined();
-          // auto serializable = extractSerializableOrThrow(rt, args[0], "[Worklets] Value must be a Serializable.");
-          // auto shareable = std::make_shared<Shareable>(serializable);
-          // return SerializableJSRef::newNativeStateObject(rt, shareable);
+        rt,
+        propName,
+        3,
+        [](jsi::Runtime &rt, const jsi::Value &thisValue, const jsi::Value *args, size_t count) -> jsi::Value {
+          auto runtime = args[0].asObject(rt).getHostObject<WorkletRuntime>(rt);
+          auto serializable = extractSerializableOrThrow(rt, args[1], "[Worklets] Value must be a Serializable.");
+          auto isInline = args[2].asBool();
+          auto shareable = std::make_shared<Shareable>(serializable, runtime, isInline);
+          return SerializableJSRef::newNativeStateObject(rt, shareable);
         });
   }
   if (name == "shareableGetAsync") {

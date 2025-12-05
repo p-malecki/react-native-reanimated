@@ -74,8 +74,21 @@ export function setupConsole(boundCapturableConsole: typeof console) {
   'worklet';
   // @ts-ignore TypeScript doesn't like that there are missing methods in console object, but we don't provide all the methods for the UI runtime console version
   globalThis.console = {
-    assert: (...args) => scheduleOnRN(boundCapturableConsole.assert, ...args),
-    debug: (...args) => scheduleOnRN(boundCapturableConsole.debug, ...args),
+    assert: (...args) =>
+      scheduleOnRN(
+        boundCapturableConsole.assert,
+        args.map((arg) => String(arg))
+      ),
+    debug: (...args) =>
+      scheduleOnRN(
+        boundCapturableConsole.debug,
+        args.map((arg) => String(arg))
+      ),
+    // log: (...args) =>
+    //   scheduleOnRN(
+    //     boundCapturableConsole.log,
+    //     args.map((arg) => String(arg))
+    //   ),
     log: (...args) => scheduleOnRN(boundCapturableConsole.log, ...args),
     warn: (...args) => scheduleOnRN(boundCapturableConsole.warn, ...args),
     error: (...args) => scheduleOnRN(boundCapturableConsole.error, ...args),

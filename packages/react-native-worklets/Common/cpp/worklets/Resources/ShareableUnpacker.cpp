@@ -83,14 +83,22 @@ const char ShareableUnpackerCode[] =
     };
     memoize = function memoize() {};
   }
-  function shareableUnpacker(shareableRef, isHost, initial) {
+  function shareableUnpacker(shareableRef, isHost, initial, inline) {
     var shareable;
     if (isHost) {
-      shareable = {
-        value: initial,
-        isHost: true,
-        __shareableRef: true
-      };
+      initial = typeof initial === 'function' ? initial() : initial;
+      if (inline) {
+        var inlineShareable = initial;
+        inlineShareable.isHost = true;
+        inlineShareable.__shareableRef = true;
+        return inlineShareable;
+      } else {
+        return {
+          isHost: true,
+          __shareableRef: true,
+          value: initial
+        };
+      }
     } else {
       var get = function shareableUnpackerNativeTs3Factory(_ref3) {
         var _worklet_13730600479565_init_data = _ref3._worklet_13730600479565_init_data,

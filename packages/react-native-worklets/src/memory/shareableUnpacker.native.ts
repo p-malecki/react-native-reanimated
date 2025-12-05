@@ -73,7 +73,8 @@ export function __installUnpacker() {
   function shareableUnpacker<TValue = unknown>(
     shareableRef: SerializableRef<TValue> | Shareable<TValue>,
     isHost: boolean,
-    initial?: TValue
+    initial?: TValue,
+    inline?: boolean
   ): Shareable<TValue> {
     type HostRuntimeType = ShareableHost<TValue>;
     type RefRuntimeType = SerializableRef<TValue>;
@@ -81,11 +82,23 @@ export function __installUnpacker() {
     let shareable: Shareable<TValue>;
 
     if (isHost) {
-      shareable = {
-        value: initial!,
-        isHost: true,
-        __shareableRef: true,
-      } as const;
+      // console.log('initial on host', initial);
+
+      initial =
+        typeof initial === 'function' ? (initial as () => TValue)() : initial;
+
+      if (inline) {
+        const inlineShareable = initial as Shareable<TValue>;
+        inlineShareable.isHost = true;
+        inlineShareable.__shareableRef = true;
+        return inlineShareable;
+      } else {
+        return {
+          isHost: true,
+          __shareableRef: true,
+          value: initial,
+        } as Shareable<TValue>;
+      }
     } else {
       const get = () => {
         'worklet';
