@@ -76,9 +76,7 @@ RuntimeBindings::RequestAnimationFrame WorkletsModule::getRequestAnimationFrame(
 }
 
 std::function<bool()> WorkletsModule::getIsOnJSQueueThread() {
-  return [javaPart = javaPart_, vm = vm]() -> bool {
-    JNIEnv *env = nullptr;
-    vm->AttachCurrentThread(reinterpret_cast<JNIEnv **>(&env), nullptr);
+  return [javaPart = javaPart_]() -> bool {
     return javaPart->getClass()->getMethod<jboolean()>("isOnJSQueueThread").operator()(javaPart);
   };
 }

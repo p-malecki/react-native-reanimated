@@ -1,7 +1,4 @@
 #include <worklets/android/AndroidUIScheduler.h>
-#include <worklets/android/WorkletsModule.h>
-
-#include <glog/logging.h>
 
 namespace worklets {
 
@@ -20,11 +17,6 @@ class UISchedulerWrapper : public UIScheduler {
     UIScheduler::scheduleOnUI(job);
     if (!scheduledOnUI_) {
       scheduledOnUI_ = true;
-#if ANDROID
-        JNIEnv *env = nullptr;
-        auto result = WorkletsModule::vm->AttachCurrentThread(reinterpret_cast<JNIEnv **>(&env), nullptr);
-        LOG(INFO) << result;
-#endif // ANDROID
       androidUiScheduler_->cthis()->scheduleTriggerOnUI();
     }
   }
