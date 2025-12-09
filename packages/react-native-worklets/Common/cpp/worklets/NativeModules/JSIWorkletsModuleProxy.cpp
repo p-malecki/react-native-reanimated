@@ -583,12 +583,13 @@ jsi::Value JSIWorkletsModuleProxy::get(jsi::Runtime &rt, const jsi::PropNameID &
     return jsi::Function::createFromHostFunction(
         rt,
         propName,
-        3,
+        4,
         [](jsi::Runtime &rt, const jsi::Value &thisValue, const jsi::Value *args, size_t count) -> jsi::Value {
-          auto runtime = args[0].asObject(rt).getHostObject<WorkletRuntime>(rt);
+          auto hostRuntime = args[0].asObject(rt).getHostObject<WorkletRuntime>(rt);
           auto serializable = extractSerializableOrThrow(rt, args[1], "[Worklets] Value must be a Serializable.");
-          auto isInline = args[2].asBool();
-          auto shareable = std::make_shared<Shareable>(serializable, runtime, isInline);
+          auto decorateHost = extractSerializableOrThrow(rt, args[2]);
+          auto decorateGuest = extractSerializableOrThrow(rt, args[3]);
+          auto shareable = std::make_shared<Shareable>(hostRuntime, serializable, decorateHost, decorateGuest);
           return SerializableJSRef::newNativeStateObject(rt, shareable);
         });
   }

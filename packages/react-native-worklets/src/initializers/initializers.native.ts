@@ -5,7 +5,9 @@ import { registerReportFatalRemoteError } from '../debug/errors';
 import { registerWorkletsError, WorkletsError } from '../debug/WorkletsError';
 import { bundleValueUnpacker } from '../memory/bundleUnpacker';
 import { __installUnpacker as installCustomSerializableUnpacker } from '../memory/customSerializableUnpacker';
-import { __installUnpacker as installShareableUnpacker } from '../memory/shareableUnpacker';
+import { makeShareableCloneOnUIRecursive } from '../memory/serializable';
+import { __installUnpacker as installShareableGuestUnpacker } from '../memory/shareableGuestUnpacker';
+import { __installUnpacker as installShareableHostUnpacker } from '../memory/shareableHostUnpacker';
 import { __installUnpacker as installSynchronizableUnpacker } from '../memory/synchronizableUnpacker';
 import { setupSetImmediate } from '../runLoop/common/setImmediatePolyfill';
 import { setupSetInterval } from '../runLoop/common/setIntervalPolyfill';
@@ -121,7 +123,8 @@ function initializeRuntime() {
   }
   installSynchronizableUnpacker();
   installCustomSerializableUnpacker();
-  installShareableUnpacker();
+  installShareableHostUnpacker();
+  installShareableGuestUnpacker();
 }
 
 /** A function that should be run only on React Native runtime. */
@@ -249,5 +252,7 @@ function installRNBindingsOnUIRuntime() {
     setupSetTimeout();
     setupSetImmediate();
     setupSetInterval();
+    globalThis.__makeSerializableCloneOnUIRecursive =
+      makeShareableCloneOnUIRecursive;
   });
 }

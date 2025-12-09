@@ -11,13 +11,19 @@ const fs = require('fs');
 const assert = require('assert').strict;
 const workletsBabelPlugin = require('../plugin');
 
+/** @type {import('../plugin/').PluginOptions} */
+const workletsBabelPluginOptions = {
+  limitInitDataHoisting: true,
+};
+
 exportToCpp('valueUnpacker.native.ts', 'ValueUnpacker');
 exportToCpp('synchronizableUnpacker.native.ts', 'SynchronizableUnpacker');
 exportToCpp(
   'customSerializableUnpacker.native.ts',
   'CustomSerializableUnpacker'
 );
-exportToCpp('shareableUnpacker.native.ts', 'ShareableUnpacker');
+exportToCpp('shareableHostUnpacker.native.ts', 'ShareableHostUnpacker');
+exportToCpp('shareableGuestUnpacker.native.ts', 'ShareableGuestUnpacker');
 
 /**
  * @param {string} sourceFilePath - The path to the TypeScript source file to
@@ -33,7 +39,7 @@ function exportToCpp(sourceFilePath, outputFilename) {
         ['@babel/preset-env', { modules: false }],
         '@babel/preset-typescript',
       ],
-      plugins: [workletsBabelPlugin],
+      plugins: [[workletsBabelPlugin, workletsBabelPluginOptions]],
       sourceType: 'unambiguous',
       code: false,
       ast: true,
@@ -46,6 +52,13 @@ function exportToCpp(sourceFilePath, outputFilename) {
     transformed && transformed.ast,
     'Transformation failed or AST not generated.'
   );
+
+  // const code = generate(transformed.ast, {
+  //   comments: false,
+  //   compact: false,
+  // }).code;
+
+  // console.log(code);
 
   let unpackerBody;
 
@@ -79,19 +92,21 @@ function exportToCpp(sourceFilePath, outputFilename) {
       `../Common/cpp/worklets/Resources/${outputFilename}.cpp`
     ),
     `// This file was generated with
-// \`packages/react-native-worklets/scripts/export-unpackers.js\`.
-// Please do not modify it directly.
+  // \`packages/react-native-worklets/scripts/export-unpackers.js\`.
+  // Please do not modify it directly.
 
-#include <worklets/Resources/Unpackers.h>
+  #include <worklets/Resources/Unpackers.h>
 
-namespace worklets {
+  namespace worklets {
 
-const char ${cstrName}[] =
-    R"${delimiter}(` +
+  const char ${cstrName}[] =
+      R"${delimiter}(` +
       transformFrom.code +
       `)${delimiter}";
-} // namespace worklets
-`,
+  } // namespace worklets
+  `,
     'utf8'
   );
+
+  console.log(`✅ Exported ${sourceFilePath} to ${outputFilename}.cpp`);
 }

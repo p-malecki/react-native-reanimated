@@ -12,6 +12,8 @@
 #include <worklets/Tools/JSScheduler.h>
 #include <worklets/WorkletRuntime/RuntimeData.h>
 
+#include <glog/logging.h>
+
 #include <memory>
 #include <string>
 #include <type_traits>
@@ -57,6 +59,8 @@ class WorkletRuntime : public jsi::HostObject, public std::enable_shared_from_th
     // JavaScript and propagating them to the main React Native thread such that
     // they can be presented using RN's LogBox.
 #ifndef NDEBUG
+      const auto argsCount = sizeof...(Args);
+      LOG(INFO) << "argsCount " << argsCount;
     return getCallGuard(rt).call(rt, function, args...);
 #else
     return function.call(rt, args...);
@@ -65,6 +69,8 @@ class WorkletRuntime : public jsi::HostObject, public std::enable_shared_from_th
   template <typename... Args>
   jsi::Value runSync(const std::shared_ptr<SerializableWorklet> &worklet, Args &&...args) const {
     jsi::Runtime &rt = *runtime_;
+      const auto argsCount = sizeof...(Args);
+      LOG(INFO) << "argsCount " << argsCount;
     return runSync(worklet->toJSValue(rt).asObject(rt).asFunction(rt), std::forward<Args>(args)...);
   }
   template <RuntimeCallable TCallable>

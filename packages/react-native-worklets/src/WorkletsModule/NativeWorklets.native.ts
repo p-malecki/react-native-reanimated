@@ -173,15 +173,17 @@ See https://docs.swmansion.com/react-native-worklets/docs/guides/troubleshooting
     );
   }
 
-  createShareable<TValue = unknown>(
+  createShareable<TShared = unknown>(
     hostRuntime: WorkletRuntime,
-    initialValue: SerializableRef<TValue>,
-    inline: boolean
-  ): SerializableRef<TValue> {
+    initial: SerializableRef<TShared>,
+    decorateHost: SerializableRef,
+    decorateRef: SerializableRef
+  ): SerializableRef<TShared> {
     return this.#workletsModuleProxy.createShareable(
       hostRuntime,
-      initialValue,
-      inline
+      initial,
+      decorateHost,
+      decorateRef
     );
   }
 

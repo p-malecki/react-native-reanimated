@@ -10,19 +10,25 @@ namespace worklets {
 
 class Shareable : public Serializable, public std::enable_shared_from_this<Shareable> {
  public:
-  static jsi::Function getShareableUnpacker(jsi::Runtime &rt);
+  static jsi::Function getShareableHostUnpacker(jsi::Runtime &rt);
+  static jsi::Function getShareableGuestUnpacker(jsi::Runtime &rt);
 
   Shareable(
-      const std::shared_ptr<Serializable> &initial,
       const std::weak_ptr<WorkletRuntime> &hostRuntime,
-      bool isInline);
+      const std::shared_ptr<Serializable> &initial,
+      const std::shared_ptr<Serializable> &decorateHost = nullptr,
+      const std::shared_ptr<Serializable> &decorateGuest = nullptr);
+
+  ~Shareable() override;
 
   jsi::Value toJSValue(jsi::Runtime &rt) override;
 
  private:
-  std::shared_ptr<jsi::Value> value_;
   std::weak_ptr<WorkletRuntime> hostRuntime_;
-  bool isInline_;
+  std::shared_ptr<Serializable> initial_;
+  std::unique_ptr<jsi::Value> hostValue_;
+  std::shared_ptr<Serializable> decorateHost_;
+  std::shared_ptr<Serializable> decorateGuest_;
 };
 
 } // namespace worklets

@@ -82,25 +82,45 @@ export type ShareableHostProps<TValue = unknown> = {
   value: TValue;
 };
 
-export type ShareableBorrowProps<TValue = unknown> = {
+export type ShareableHostMeta = {
+  isHost: true;
+  __shareableRef: true;
+};
+
+export type PureShareableHost<TValue = unknown> = ShareableHostProps<TValue> &
+  ShareableHostMeta;
+
+export type ShareableHostDecorator<
+  TValue = unknown,
+  TDecorated extends PureShareableHost<TValue> = PureShareableHost<TValue>,
+> = (shareable: PureShareableHost<TValue>) => TDecorated;
+
+export type ShareableGuestMeta = {
+  isHost: false;
+  __shareableRef: true;
+};
+
+export type ShareableGuestProps<TValue = unknown> = {
   getAsync(): Promise<TValue>;
   getSync(): TValue;
   setAsync(value: TValue | ((prev: TValue) => TValue)): void;
   setSync(value: TValue | ((prev: TValue) => TValue)): void;
 };
 
-export type ShareableHost<TValue = unknown> = {
-  isHost: true;
-  __shareableRef: true;
-} & ShareableHostProps<TValue> &
-  Partial<ShareableBorrowProps<TValue>>;
+export type PureShareableGuest<TValue = unknown> = ShareableGuestProps<TValue> &
+  ShareableGuestMeta;
 
-export type ShareableBorrow<TValue = unknown> = {
-  isHost: false;
-  __shareableRef: true;
-} & ShareableBorrowProps<TValue> &
+export type ShareableGuestDecorator<
+  TValue = unknown,
+  TDecorated extends PureShareableGuest<TValue> = PureShareableGuest<TValue>,
+> = (shareable: PureShareableGuest<TValue>) => TDecorated;
+
+export type ShareableHost<TValue = unknown> = ShareableHostProps<TValue> &
+  Partial<ShareableGuestProps<TValue>>;
+
+export type ShareableGuest<TValue = unknown> = ShareableGuestProps<TValue> &
   Partial<ShareableHostProps<TValue>>;
 
 export type Shareable<TValue = unknown> =
   | ShareableHost<TValue>
-  | ShareableBorrow<TValue>;
+  | ShareableGuest<TValue>;

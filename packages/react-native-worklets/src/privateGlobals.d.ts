@@ -5,7 +5,8 @@
 import type { callGuardDEV } from './callGuard';
 import type { reportFatalRemoteError } from './debug/errors';
 import type { CustomSerializableUnpacker } from './memory/customSerializableUnpacker';
-import type { ShareableUnpacker } from './memory/shareableUnpacker';
+import type { ShareableGuestUnpacker } from './memory/shareableGuestUnpacker';
+import type { ShareableHostUnpacker } from './memory/shareableHostUnpacker';
 import type { SynchronizableUnpacker } from './memory/synchronizableUnpacker';
 import type { CustomSerializationRegistry } from './memory/types';
 import type { Queue } from './runLoop/workletRuntime/taskQueue';
@@ -24,7 +25,7 @@ declare global {
   var _WORKLETS_VERSION_JS: string | undefined;
   var _createSerializable: <T>(
     value: T,
-    nativeStateSource?: object
+    nativeStateSource: object | undefined
   ) => FlatSerializableRef<T>;
   var _createSerializableString: (value: string) => FlatSerializableRef<string>;
   var _createSerializableNumber: (value: number) => FlatSerializableRef<number>;
@@ -82,7 +83,11 @@ declare global {
   var __hasNativeState: (value: object) => boolean;
   /** Only in Debug builds. */
   var __isHostObject: (value: object) => boolean;
-  var __shareableUnpacker: ShareableUnpacker;
+  var __shareableHostUnpacker: ShareableHostUnpacker;
+  var __shareableGuestUnpacker: ShareableGuestUnpacker;
+  var __makeSerializableCloneOnUIRecursive: <TValue>(
+    value: TValue
+  ) => SerializableRef<TValue>;
   interface NodeRequire {
     resolveWeak(id: string): number;
     getModules(): Map<number, unknown>;

@@ -13,6 +13,8 @@ namespace worklets {
 using namespace facebook;
 using namespace react;
 
+JavaVM *WorkletsModule::vm = nullptr;
+
 WorkletsModule::WorkletsModule(
     jni::alias_ref<jhybridobject> jThis,
     jsi::Runtime *rnRuntime,
@@ -74,7 +76,9 @@ RuntimeBindings::RequestAnimationFrame WorkletsModule::getRequestAnimationFrame(
 }
 
 std::function<bool()> WorkletsModule::getIsOnJSQueueThread() {
-  return [javaPart = javaPart_]() -> bool {
+  return [javaPart = javaPart_, vm = vm]() -> bool {
+    JNIEnv *env = nullptr;
+    vm->AttachCurrentThread(reinterpret_cast<JNIEnv **>(&env), nullptr);
     return javaPart->getClass()->getMethod<jboolean()>("isOnJSQueueThread").operator()(javaPart);
   };
 }
