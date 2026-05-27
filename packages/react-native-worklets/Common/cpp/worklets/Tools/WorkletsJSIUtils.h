@@ -73,10 +73,8 @@ inline std::tuple<T, Rest...> convertArgs(jsi::Runtime &rt, const jsi::Value *ar
 // returns a tuple with the result of casting `args` to appropriate
 // native C++ types needed to call `function`
 template <typename Ret, typename... Args>
-std::tuple<Args...> getArgsForFunction(std::function<Ret(Args...)>,
-                                       jsi::Runtime &rt,
-                                       const jsi::Value *args,
-                                       const size_t count) {
+std::tuple<Args...>
+getArgsForFunction(std::function<Ret(Args...)>, jsi::Runtime &rt, const jsi::Value *args, const size_t count) {
   react_native_assert(sizeof...(Args) == count && "Argument list has different length than expected");
   return convertArgs<Args...>(rt, args);
 }
@@ -85,10 +83,11 @@ std::tuple<Args...> getArgsForFunction(std::function<Ret(Args...)>,
 // native C++ types needed to call `function`,
 // passing `rt` as the first argument
 template <typename Ret, typename... Args>
-std::tuple<jsi::Runtime &, Args...> getArgsForFunction(const std::function<Ret(jsi::Runtime &, Args...)> &,
-                                                       jsi::Runtime &rt,
-                                                       const jsi::Value *args,
-                                                       const size_t count) {
+std::tuple<jsi::Runtime &, Args...> getArgsForFunction(
+    const std::function<Ret(jsi::Runtime &, Args...)> &,
+    jsi::Runtime &rt,
+    const jsi::Value *args,
+    const size_t count) {
   react_native_assert(sizeof...(Args) == count && "Argument list has different length than expected");
   return std::tuple_cat(std::tie(rt), convertArgs<Args...>(rt, args));
 }
@@ -153,8 +152,7 @@ struct takes_runtime<jsi::Runtime &, Rest...> {
 template <typename Ret, typename... Args>
 void installJsiFunction(jsi::Runtime &rt, std::string_view name, const std::function<Ret(Args...)> &function) {
   auto clb = createHostFunction(function);
-  // unsigned int argsCount = sizeof...(Args) - takes_runtime<Args...>::value;
-  auto argsCount = sizeof...(Args) - takes_runtime<Args...>::value;
+  auto argsCount = static_cast<int>(sizeof...(Args) - takes_runtime<Args...>::value);
   jsi::Value jsiFunction =
       jsi::Function::createFromHostFunction(rt, jsi::PropNameID::forAscii(rt, name.data()), argsCount, clb);
   rt.global().setProperty(rt, name.data(), jsiFunction);
