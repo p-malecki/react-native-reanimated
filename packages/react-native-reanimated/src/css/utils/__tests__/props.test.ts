@@ -18,6 +18,7 @@ describe(filterCSSAndStyleProperties, () => {
       expect(filterCSSAndStyleProperties(style)).toEqual([
         null,
         expect.any(Object),
+        null,
         expect.any(Object),
         null,
       ]);
@@ -31,6 +32,7 @@ describe(filterCSSAndStyleProperties, () => {
       expect(filterCSSAndStyleProperties(style)).toEqual([
         null,
         expect.any(Object),
+        null,
         expect.any(Object),
         null,
       ]);
@@ -44,6 +46,7 @@ describe(filterCSSAndStyleProperties, () => {
       expect(filterCSSAndStyleProperties(style)).toEqual([
         style,
         expect.any(Object),
+        null,
         expect.any(Object),
         null,
       ]);
@@ -60,6 +63,7 @@ describe(filterCSSAndStyleProperties, () => {
       expect(filterCSSAndStyleProperties(style)).toEqual([
         style,
         expect.any(Object),
+        null,
         expect.any(Object),
         null,
       ]);
@@ -85,6 +89,7 @@ describe(filterCSSAndStyleProperties, () => {
         expect(filterCSSAndStyleProperties(style)).toEqual([
           expect.objectContaining({ [key]: value }),
           null,
+          null,
           {},
           null,
         ]);
@@ -97,6 +102,7 @@ describe(filterCSSAndStyleProperties, () => {
       const style: CSSStyle = {};
       expect(filterCSSAndStyleProperties(style)).toEqual([
         expect.any(Object),
+        null,
         null,
         expect.any(Object),
         null,
@@ -114,12 +120,14 @@ describe(filterCSSAndStyleProperties, () => {
       expect(filterCSSAndStyleProperties(style1)).toEqual([
         expect.any(Object),
         style1,
+        null,
         expect.any(Object),
         null,
       ]);
       expect(filterCSSAndStyleProperties(style2)).toEqual([
         expect.any(Object),
         style2,
+        null,
         expect.any(Object),
         null,
       ]);
@@ -136,6 +144,7 @@ describe(filterCSSAndStyleProperties, () => {
       expect(filterCSSAndStyleProperties(config)).toEqual([
         expect.any(Object),
         { transition: 'opacity 2s ease-in' },
+        null,
         expect.any(Object),
         null,
       ]);
@@ -155,6 +164,7 @@ describe(filterCSSAndStyleProperties, () => {
         expect(filterCSSAndStyleProperties(style)).toEqual([
           null,
           expect.objectContaining({ [key]: value }),
+          null,
           {},
           null,
         ]);
@@ -176,7 +186,6 @@ describe(filterCSSAndStyleProperties, () => {
       expect(filterCSSAndStyleProperties(style)).toEqual([
         null,
         null,
-        { opacity: 1, backgroundColor: 'blue' },
         {
           ':active': {
             selectorStyle: { opacity: 0.5, backgroundColor: 'red' },
@@ -187,6 +196,7 @@ describe(filterCSSAndStyleProperties, () => {
             defaultStyle: { backgroundColor: 'blue' },
           },
         },
+        { opacity: 1, backgroundColor: 'blue' },
       ]);
     });
 
@@ -196,7 +206,7 @@ describe(filterCSSAndStyleProperties, () => {
         width: 100,
       };
 
-      const [, , filteredStyle] = filterCSSAndStyleProperties(style);
+      const [, , , filteredStyle] = filterCSSAndStyleProperties(style);
 
       expect(filteredStyle).toEqual({ opacity: 0.8, width: 100 });
     });
@@ -207,7 +217,7 @@ describe(filterCSSAndStyleProperties, () => {
         width: 100,
       };
 
-      const [, , filteredStyle, pseudoStylesBySelector] =
+      const [, , pseudoStylesBySelector, filteredStyle] =
         filterCSSAndStyleProperties(style);
 
       expect(filteredStyle).toEqual({ width: 100 });
@@ -225,7 +235,7 @@ describe(filterCSSAndStyleProperties, () => {
         width: 100,
       };
 
-      const [, , filteredStyle, pseudoStylesBySelector] =
+      const [, , pseudoStylesBySelector, filteredStyle] =
         filterCSSAndStyleProperties(style);
 
       expect(filteredStyle).toEqual({ opacity: 0.8, width: 100 });
@@ -242,13 +252,13 @@ describe(filterCSSAndStyleProperties, () => {
       expect(filterCSSAndStyleProperties(style)).toEqual([
         null,
         { transitionDuration: '150ms' },
-        { opacity: 1, borderRadius: 8 },
         {
           ':active': {
             selectorStyle: { opacity: 0.6 },
             defaultStyle: { opacity: 1 },
           },
         },
+        { opacity: 1, borderRadius: 8 },
       ]);
     });
   });
@@ -262,7 +272,7 @@ describe(filterCSSAndStyleProperties, () => {
           borderWidth: { default: 0, ':focus': 2 },
         };
 
-        const [, , filteredStyle, pseudoStylesBySelector] =
+        const [, , pseudoStylesBySelector, filteredStyle] =
           filterCSSAndStyleProperties(style);
 
         expect(filteredStyle).toEqual({
@@ -294,7 +304,7 @@ describe(filterCSSAndStyleProperties, () => {
           height: 100,
         };
 
-        const [, , filteredStyle, pseudoStylesBySelector] =
+        const [, , pseudoStylesBySelector, filteredStyle] =
           filterCSSAndStyleProperties(style);
 
         expect(filteredStyle).toEqual({
@@ -327,7 +337,7 @@ describe(filterCSSAndStyleProperties, () => {
           },
         };
 
-        const [, , filteredStyle, pseudoStylesBySelector] =
+        const [, , pseudoStylesBySelector, filteredStyle] =
           filterCSSAndStyleProperties(style);
 
         expect(filteredStyle).toEqual({ opacity: 1 });
@@ -353,7 +363,7 @@ describe(filterCSSAndStyleProperties, () => {
           backgroundColor: { default: 'white', ':active': 'red' },
         };
 
-        const [, , filteredStyle, pseudoStylesBySelector] =
+        const [, , pseudoStylesBySelector, filteredStyle] =
           filterCSSAndStyleProperties(style);
 
         expect(filteredStyle).toEqual({ opacity: 1, backgroundColor: 'white' });
@@ -374,7 +384,7 @@ describe(filterCSSAndStyleProperties, () => {
           opacity: { ':active': 0.5, ':hover': 0.8 } as never,
         };
 
-        const [, , filteredStyle, pseudoStylesBySelector] =
+        const [, , pseudoStylesBySelector, filteredStyle] =
           filterCSSAndStyleProperties(style);
 
         expect(filteredStyle).toEqual({});
@@ -401,7 +411,7 @@ describe(filterCSSAndStyleProperties, () => {
           } as never,
         };
 
-        const [, , filteredStyle, pseudoStylesBySelector] =
+        const [, , pseudoStylesBySelector, filteredStyle] =
           filterCSSAndStyleProperties(style);
 
         expect(filteredStyle).toEqual({ backgroundColor: 'white' });
@@ -426,8 +436,7 @@ describe(filterCSSAndStyleProperties, () => {
           } as never,
         };
 
-        const [, , , pseudoStylesBySelector] =
-          filterCSSAndStyleProperties(style);
+        const [, , pseudoStylesBySelector] = filterCSSAndStyleProperties(style);
 
         expect(pseudoStylesBySelector).toMatchObject({
           ':focus-visible': {
@@ -463,6 +472,7 @@ describe(filterCSSAndStyleProperties, () => {
           transitionProperty: style.transitionProperty,
           transitionDuration: style.transitionDuration,
         }),
+        null,
         {
           width: 100,
           height: 100,

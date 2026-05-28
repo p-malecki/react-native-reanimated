@@ -28,7 +28,7 @@ import type { PluginOptions } from '../plugin';
 import plugin from '../plugin';
 
 const MOCK_LOCATION = 'test.js';
-const MOCK_WORKLET_RUNTIME_ENTRY = 'workletRuntimeEntry.native.ts';
+const MOCK_WORKLET_RUNTIME_ENTRY = 'react-native-worklets/src/index.ts';
 const MOCK_OTHER_FILE = 'someOtherFile.ts';
 
 const REQUIRE_PREFIX = 'require("react-native-worklets/.worklets/';
@@ -224,10 +224,49 @@ describe('babel plugin in bundleMode', () => {
       expect(files).toHaveLength(1);
       expect(files[0].content).toContain(`from "${expected}"`);
     });
+
+    test('rebases relative requires inside the worklet body against the worklets directory', () => {
+      const input = html`<script>
+        function baz() {
+          'worklet';
+          const helper = require('./helper');
+          return helper.foo();
+        }
+      </script>`;
+
+      const fakeFilename = path.relative(__dirname, 'some-library/file.js');
+      const { files } = runPlugin(
+        input,
+        {},
+        { workletizableModules: ['some-library'] },
+        fakeFilename
+      );
+      expect(files).toHaveLength(1);
+      expect(files[0].content).toContain(
+        `require("../../some-library/helper")`
+      );
+      expect(files[0].content).toMatchSnapshot();
+    });
+
+    test('does not rebase relative requires from non-workletizable files', () => {
+      const input = html`<script>
+        function baz() {
+          'worklet';
+          const helper = require('./helper');
+          return helper.foo();
+        }
+      </script>`;
+
+      const fakeFilename = '/not-a-workletizable-package/src/file.ts';
+      const { files } = runPlugin(input, {}, {}, fakeFilename);
+      expect(files).toHaveLength(1);
+      expect(files[0].content).toContain(`require('./helper')`);
+      expect(files[0].content).toMatchSnapshot();
+    });
   });
 
-  describe('workletRuntimeEntry toggle', () => {
-    test('flips _WORKLETS_BUNDLE_MODE_ENABLED to true in workletRuntimeEntry', () => {
+  describe('worklet runtime entry-point toggle', () => {
+    test('flips _WORKLETS_BUNDLE_MODE_ENABLED to true in the entry-point', () => {
       const input = html`<script>
         globalThis._WORKLETS_BUNDLE_MODE_ENABLED = false;
       </script>`;

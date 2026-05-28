@@ -11,8 +11,8 @@ import type { PredefinedTimingFunction, StepsModifier } from '../easing/types';
 import type {
   CSSAnimationKeyframes,
   CSSAnimationProp,
+  CSSConfigProp,
   CSSKeyframesRule,
-  CSSStyleProp,
   CSSTransitionProp,
   Repeat,
   TimeUnit,
@@ -20,6 +20,7 @@ import type {
 
 const ANIMATION_PROPS_SET = new Set<string>(ANIMATION_PROPS);
 const TRANSITION_PROPS_SET = new Set<string>(TRANSITION_PROPS);
+// is-tree-shakable-suppress
 const VALID_STEPS_MODIFIERS_SET = new Set<string>(VALID_STEPS_MODIFIERS);
 
 const VALID_PREDEFINED_TIMING_FUNCTIONS_SET = new Set<string>(
@@ -48,7 +49,7 @@ export const isTransitionProp = (key: string): key is CSSTransitionProp =>
 export const isStepsModifier = (value: string): value is StepsModifier =>
   VALID_STEPS_MODIFIERS_SET.has(value);
 
-export const isCSSStyleProp = (key: string): key is CSSStyleProp =>
+export const isCSSConfigProp = (key: string): key is CSSConfigProp =>
   isTransitionProp(key) || isAnimationProp(key);
 
 export const isTimeUnit = (value: unknown): value is TimeUnit =>
@@ -83,15 +84,4 @@ export const isPseudoSelectorValue = (
     return false;
   }
   return keys.every((key) => key === 'default' || key.startsWith(':'));
-};
-
-export const resolvePseudoKeyed = <T>(
-  value: T | undefined,
-  selector: string = 'default'
-): T | undefined => {
-  if (!isPseudoSelectorValue(value)) {
-    return value;
-  }
-  const obj = value as Record<string, unknown>;
-  return (obj[selector] ?? obj.default) as T | undefined;
 };

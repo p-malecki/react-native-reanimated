@@ -212,14 +212,12 @@ inline void registerCustomSerializable(
     const int typeId) {
   const SerializationData data{.determine = determine, .pack = pack, .unpack = unpack, .typeId = typeId};
   // Prevent registering new worklet runtimes while we are updating existing ones to prevent inconsistencies.
-  runtimeManager->pause();
-
-  memoryManager->registerCustomSerializable(data);
-  for (const auto &runtime : runtimeManager->getAllRuntimes()) {
-    memoryManager->loadCustomSerializable(runtime, data);
-  }
-
-  runtimeManager->resume();
+  runtimeManager->withRegistrationPaused([&] {
+    memoryManager->registerCustomSerializable(data);
+    for (const auto &runtime : runtimeManager->getAllRuntimes()) {
+      memoryManager->loadCustomSerializable(runtime, data);
+    }
+  });
 }
 
 } // namespace
@@ -391,6 +389,13 @@ jsi::Object JSIWorkletsModuleProxy::toOptimizedObject(jsi::Runtime &rt) const {
         }
 
         return makeSerializableError(rt, name, message, stack);
+      });
+
+  jsi_utils::addMethod<2>(
+      rt, obj, "createSerializableRegExp", [](jsi::Runtime &rt, const jsi::Value &, const jsi::Value(&args)[2]) {
+        const auto pattern = at<0>(args).getString(rt).utf8(rt);
+        const auto flags = at<1>(args).getString(rt).utf8(rt);
+        return makeSerializableRegExp(rt, pattern, flags);
       });
 
   jsi_utils::addMethod<2>(
@@ -589,6 +594,23 @@ jsi::Object JSIWorkletsModuleProxy::toOptimizedObject(jsi::Runtime &rt) const {
 #endif // NDEBUG
       });
 
+  jsi_utils::addMethod<2>(
+      rt,
+      obj,
+      "handlePromise",
+      [runtimeManager = runtimeManager_](jsi::Runtime &rt, const jsi::Value &, const jsi::Value(&args)[2]) {
+        const auto fun = at<0>(args).getObject(rt).getFunction(rt);
+        // NOLINTNEXTLINE(readability/braces)
+        if (fun.getProperty(rt, "__remoteFunction").isUndefined()) [[unlikely]] {
+          // TODO: add a fast path for it in TypeScript
+          fun.call(rt, extractSerializableOrThrow(rt, at<1>(args))->toJSValue(rt));
+        } else {
+          auto resolveOrReject = extractSerializableOrThrow<SerializableRemoteFunction>(rt, at<0>(args));
+          auto valueOrError = extractSerializableOrThrow(rt, at<1>(args));
+          resolveOrReject->resolveOrRejectPromise(valueOrError, runtimeManager);
+        }
+      });
+
   jsi_utils::addMethod<3>(
       rt,
       obj,
@@ -713,6 +735,7 @@ jsi::Object JSIWorkletsModuleProxy::toOptimizedObject(jsi::Runtime &rt) const {
         react_native_assert(
             hostRuntimeId != RuntimeData::rnRuntimeId &&
             "createSerializableLEGACY should never be called on the React Native runtime.");
+        (void)hostRuntimeId;
         const auto &value = at<0>(args);
         const auto shouldRetainRemote = jsi::Value::undefined();
         const auto &nativeStateSource = at<1>(args);

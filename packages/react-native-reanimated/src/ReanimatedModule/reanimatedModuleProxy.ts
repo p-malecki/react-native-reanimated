@@ -13,6 +13,7 @@ import type {
 } from '../commonTypes';
 import type {
   CSSAnimationUpdates,
+  CSSPseudoStyleConfig,
   CSSTransitionConfig,
   NormalizedCSSAnimationKeyframesConfig,
 } from '../css/native';
@@ -96,12 +97,7 @@ export interface ReanimatedModuleProxy {
 
   registerPseudoStyle(
     shadowNodeWrapper: ShadowNodeWrapper,
-    config: {
-      selector: PseudoSelectorKey;
-      selectorStyle: StyleProps;
-      defaultStyle: StyleProps;
-      transition: CSSTransitionConfig;
-    }
+    config: CSSPseudoStyleConfig
   ): void;
 
   unregisterPseudoStyle(viewTag: number): void;

@@ -1,8 +1,9 @@
 'use strict';
 import type { StyleProp } from 'react-native';
 
-import type { AnyRecord, PlainStyle } from '../../common';
+import type { PlainStyle } from '../../common';
 import type { CSSAnimationProperties } from './animation';
+import type { PseudoValue } from './pseudo';
 import type { CSSTransitionProperties } from './transition';
 
 /*
@@ -18,30 +19,12 @@ type PickStyleProps<P> = Pick<
   }[keyof P]
 >;
 
-export type PseudoSelectorKey =
-  | ':hover'
-  | ':active'
-  | ':active-deepest'
-  | ':focus'
-  | ':focus-within';
-
-export type PseudoValue<T> = {
-  default?: T;
-} & { [K in PseudoSelectorKey]?: T } & { [K in `:${string}`]?: T };
-
-export type CSSStyle<S extends AnyRecord = PlainStyle> = {
-  [K in keyof S]: S[K] | PseudoValue<NonNullable<S[K]>>;
+export type CSSStyle<S extends object = PlainStyle> = {
+  [K in keyof S]: S[K] | PseudoValue<S[K]>;
 } & Partial<CSSAnimationProperties<S>> &
   Partial<CSSTransitionProperties<S>>;
 
-export type CSSPseudoSelectorStyle = {
-  [K in keyof PlainStyle]?:
-    | PlainStyle[K]
-    | PseudoValue<NonNullable<PlainStyle[K]>>;
-} & Partial<CSSAnimationProperties<PlainStyle>> &
-  Partial<CSSTransitionProperties<PlainStyle>>;
-
-type CSSStyleProps<P extends object> = {
+type StylePropsWithCSS<P extends object> = {
   [K in keyof PickStyleProps<P>]: P[K] extends StyleProp<infer U>
     ? U extends object
       ? StyleProp<CSSStyle<U>>
@@ -53,4 +36,5 @@ type RestProps<P extends object> = {
   [K in keyof Omit<P, keyof PickStyleProps<P>>]: P[K];
 };
 
-export type CSSProps<P extends object> = CSSStyleProps<P> & RestProps<P>;
+export type PropsWithCSS<P extends object> = StylePropsWithCSS<P> &
+  RestProps<P>;

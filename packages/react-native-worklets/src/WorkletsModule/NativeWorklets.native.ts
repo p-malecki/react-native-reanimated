@@ -161,6 +161,13 @@ See https://docs.swmansion.com/react-native-worklets/docs/guides/troubleshooting
     );
   }
 
+  createSerializableRegExp(
+    pattern: string,
+    flags: string
+  ): SerializableRef<RegExp> {
+    return this.#workletsModuleProxy.createSerializableRegExp(pattern, flags);
+  }
+
   createSerializableInitializer(obj: object) {
     return this.#workletsModuleProxy.createSerializableInitializer(obj);
   }
@@ -306,6 +313,18 @@ See https://docs.swmansion.com/react-native-worklets/docs/guides/troubleshooting
       runtimeId,
       worklet,
       scheduleStack
+    );
+  }
+
+  handlePromise<TValue>(
+    resolveOrReject:
+      | ((value: TValue | PromiseLike<TValue>) => void)
+      | RemoteFunction,
+    valueOrError: SerializableRef<TValue>
+  ) {
+    return this.#workletsModuleProxy.handlePromise(
+      resolveOrReject,
+      valueOrError
     );
   }
 

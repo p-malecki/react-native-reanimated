@@ -87,6 +87,11 @@ export interface WorkletsModuleProxy {
     stack: string | undefined
   ): SerializableRef<Error>;
 
+  createSerializableRegExp(
+    pattern: string,
+    flags: string
+  ): SerializableRef<RegExp>;
+
   createSerializableInitializer(obj: object): SerializableRef<object>;
 
   createSerializableNonWorkletFunction<TArgs extends unknown[], TReturn>(
@@ -167,6 +172,13 @@ export interface WorkletsModuleProxy {
     scheduleStack?: string
   ): TReturn;
 
+  handlePromise<TValue>(
+    resolveOrReject:
+      | ((value: TValue | PromiseLike<TValue>) => void)
+      | RemoteFunction,
+    valueOrError: SerializableRef<TValue>
+  ): void;
+
   reportFatalErrorOnJS(message: string, stack: string, name: string): void;
 
   createSynchronizable<TValue>(value: TValue): SynchronizableRef<TValue>;
@@ -203,7 +215,7 @@ export interface WorkletsModuleProxy {
   /** @deprecated Don't use unless you have to. */
   createSerializableLEGACY<TValue>(
     value: TValue,
-    nativeStateSource?: object
+    nativeStateSource: object | undefined
   ): SerializableRef<TValue>;
 }
 

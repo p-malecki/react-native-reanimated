@@ -14,8 +14,11 @@ export interface ICSSTransitionsManager {
   unmountCleanup(): void;
 }
 
-export interface ICSSPseudoSelectorsManager {
-  update(pseudoStylesBySelector: PseudoStylesBySelector | null): void;
+export interface ICSSPseudoStylesManager {
+  update(
+    pseudoStylesBySelector: PseudoStylesBySelector | null,
+    transitionProperties: CSSTransitionProperties | null
+  ): void;
   unmountCleanup(): void;
 }
 

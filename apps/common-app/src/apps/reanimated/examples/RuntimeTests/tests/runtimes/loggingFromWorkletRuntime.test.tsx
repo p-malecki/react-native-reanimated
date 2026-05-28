@@ -237,6 +237,7 @@ const testCases: Record<string, TestCase> = {
   },
   promise: {
     expected: '{ _x: 0, _y: 1, _z: undefined, _A: null }',
+    errorsOnNoBundleMode: true,
     factory: () => {
       'worklet';
       return new Promise<void>((r) => {
@@ -255,8 +256,7 @@ const testCases: Record<string, TestCase> = {
     },
   },
   regExp: {
-    bundleMode: '/abc/gi',
-    noBundleMode: '{}',
+    expected: '/abc/gi',
     factory: () => {
       'worklet';
       return /abc/gi;
